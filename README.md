@@ -38,6 +38,7 @@ yarn build
 
 ### To run tests
 single file: yarn run-tests sample
+
 multiple files: yarn run-tests login signup purchase
 
 if file is not existed: Test file "nonexist.test.ts" does not exist in src/tests/
