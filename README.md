@@ -29,3 +29,15 @@ Ensure you have the following installed:
 - Node.js (v16.x or higher)
 - npm or yarn (to install dependencies)
 
+## Run test script
+### Name test script
+[name].test.ts
+
+### To build
+yarn build
+
+### To run tests
+single file: yarn run-tests sample
+multiple files: yarn run-tests login signup purchase
+
+if file is not existed: Test file "nonexist.test.ts" does not exist in src/tests/
