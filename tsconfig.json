@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "rootDir": "./src",
+        "target": "ES2017",
+        "module": "ESNext",
+        "lib": [
+            "ES2017",
+            "DOM"
+        ],
+        "types": [
+            "k6",
+            "@types/chai"
+        ],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "sourceMap": false
+    },
+    "include": [
+        "./**/*.ts",
+        "./k6chaijs.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

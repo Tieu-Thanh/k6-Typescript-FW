@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+npm-debug.log
+
+# Logs
+logs
+*.log
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.pid.lock
+
+# k6 output
+.k6/
+
+# Coverage directory used by testing frameworks
+coverage/
+
+# Optional eslint cache
+.eslintcache
+
+# Editor specific files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Environment variables
+.env

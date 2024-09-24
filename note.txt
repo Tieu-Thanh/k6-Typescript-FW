@@ -1,0 +1,11 @@
+# Name test script
+[name].test.ts
+
+# To build
+yarn build
+
+# To run tests
+## Run login, signup, and purchase tests
+yarn run-tests login signup purchase
+
+### if file is not existed: Test file "nonexist.test.ts" does not exist in src/tests/
