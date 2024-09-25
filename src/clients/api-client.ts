@@ -45,6 +45,16 @@ export class APIClient {
         return this;
     }
 
+    setAcceptLanguage(language: string) {
+        this.setHeader('Accept-Language', language);
+        return this;
+    }
+
+    setCookie(cookie: string) {
+        this.setHeader('Cookie', cookie);
+        return this;
+    }
+
     setUserAgent(agent: string) {
         this.setHeader('User-Agent', agent);
         return this;

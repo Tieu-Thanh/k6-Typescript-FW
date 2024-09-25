@@ -323,6 +323,11 @@ var ResponseCheck = class {
     expect(this.response.body, "response body").to.include(searchString);
     return this;
   }
+  showResponse() {
+    console.log(`Status: ${this.response.status}`);
+    console.log(`Headers: ${JSON.stringify(this.response.headers, null, 2)}`);
+    console.log(`Body: ${this.response.body}`);
+  }
   // Validate the response body against a JSON schema
   jsonSchema(schema) {
     const data = this.response.json();

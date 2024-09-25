@@ -32,6 +32,12 @@ export class ResponseCheck {
         return this;
     }
 
+    showResponse(): void {
+        console.log(`Status: ${this.response.status}`);
+        console.log(`Headers: ${JSON.stringify(this.response.headers, null, 2)}`);
+        console.log(`Body: ${this.response.body}`);
+    }
+
     // Validate the response body against a JSON schema
     jsonSchema(schema: object): this {
         const data = this.response.json();
