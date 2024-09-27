@@ -11,7 +11,7 @@ var credentials = new DataProvider<CredentialDto>("credentials", "../../src/test
 
 
 const createCrocodile = new ScenarioConfig('iteratingly-creating-crocodiles')
-    .usePerVUIterations(10, 5, '30s') // 5 concurrent users, each runs 5 iterations, max durations 30s
+    .userConstantArrivalRate(5, '30s', 10, 20, '1s')
     .setExec('createCrocodileTest')
 
 

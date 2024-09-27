@@ -398,6 +398,16 @@ var ScenarioConfig = class {
     this.config.maxDuration = maxDuration;
     return this;
   }
+  // Implementing constant-arrival-rate
+  userConstantArrivalRate(rate, timeUnit, duration, preAllocatedVUs, maxVUs) {
+    this.config.executor = "constant-arrival-rate";
+    this.config.rate = rate;
+    this.config.timeUnit = timeUnit;
+    this.config.duration = duration;
+    this.config.preAllocatedVUs = preAllocatedVUs;
+    this.config.maxVUs = maxVUs;
+    return this;
+  }
   build() {
     return { [this.scenarioName]: this.config };
   }
@@ -447,7 +457,7 @@ var DataProvider = class {
 
 // src/tests/create-crocodile.test.ts
 var credentials = new DataProvider("credentials", "../../src/test-data/credentials.json");
-var createCrocodile = new ScenarioConfig("iteratingly-creating-crocodiles").usePerVUIterations(10, 5, "30s").setExec("createCrocodileTest");
+var createCrocodile = new ScenarioConfig("iteratingly-creating-crocodiles").userConstantArrivalRate(5, "1s", "30s", 10, 20).setExec("createCrocodileTest");
 var options = new K6Config().addScenario(createCrocodile).build();
 function createCrocodileTest() {
   const testK6API = new TestK6API();
@@ -463,7 +473,7 @@ function createCrocodileTest() {
     age: ""
   };
   var resCreateCrocodile = testK6API.createCrocodile(crocodile);
-  new ResponseCheck(resCreateCrocodile, "Create Crocodile successfully").showBody().bodyContains("You have already reached the limit.");
+  new ResponseCheck(resCreateCrocodile, "Create Crocodile successfully").showBody().status(201);
   sleep(1);
 }
 export {

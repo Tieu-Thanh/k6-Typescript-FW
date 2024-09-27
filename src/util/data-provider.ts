@@ -1,26 +1,34 @@
 import { SharedArray } from 'k6/data';
 import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js'; // For CSV parsing
-// import { open } from 'k6/fs'; // For file operations in k6
 
 export class DataProvider<T> {
-    private data: T[];
+    private data: T[];  // Stores the loaded data (array of generic type T)
 
+    /**
+     * Constructs the DataProvider and loads data using the provided file path.
+     * @param name - A unique name used to identify the shared data.
+     * @param filePath - The path to the data file (JSON or CSV).
+     */
     constructor(name: string, filePath: string) {
-        this.data = new SharedArray<T>(name, () => this.loadData(filePath));
+        this.data = new SharedArray<T>(name, () => this.loadData(filePath));  // Load data and share it across VUs
     }
 
-    // Load data based on file type (JSON or CSV)
+    /**
+     * Loads data from the given file path. Supports both JSON and CSV file formats.
+     * @param filePath - The path to the file containing test data (must be .json or .csv).
+     * @returns An array of the loaded data.
+     */
     private loadData(filePath: string): T[] {
-        const fileContent = open(filePath);  // This `open()` is provided by K6, not `k6/fs`
+        const fileContent = open(filePath);  // Open the file content using k6's `open()` function
 
         if (filePath.endsWith('.json')) {
-            // Parse JSON content
+            // Parse and return JSON content
             return JSON.parse(fileContent);
         } else if (filePath.endsWith('.csv')) {
-            // Parse CSV content
+            // Parse CSV content using papaparse library and return parsed data
             const parsedData = papaparse.parse<T>(fileContent, {
-                header: true, // Assuming the CSV file has headers
-                skipEmptyLines: true,
+                header: true,          // Assuming CSV files have headers
+                skipEmptyLines: true,  // Ignore empty lines in the CSV file
             });
             return parsedData.data;
         } else {
@@ -28,23 +36,36 @@ export class DataProvider<T> {
         }
     }
 
-    // Get the entire data array
+    /**
+     * Gets all data entries.
+     * @returns The entire data array.
+     */
     getAll(): T[] {
         return this.data;
     }
 
-    // Get a random item from the data array
+    /**
+     * Gets a random item from the data array.
+     * @returns A randomly selected data item from the array.
+     */
     getRandomItem(): T {
         const index = Math.floor(Math.random() * this.data.length);
         return this.data[index];
     }
 
-    // Get an item by index
+    /**
+     * Gets a specific item by index from the data array.
+     * @param index - The index of the item in the array.
+     * @returns The data item at the specified index.
+     */
     getItem(index: number): T {
         return this.data[index];
     }
 
-    // Get the number of items in the data array
+    /**
+     * Gets the length of the data array.
+     * @returns The number of items in the array.
+     */
     getLength(): number {
         return this.data.length;
     }

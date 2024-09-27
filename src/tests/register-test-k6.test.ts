@@ -20,7 +20,7 @@ export const options = new K6Config()
 
 export function registerTestK6Test() {
     const testK6API = new TestK6API();
-    const account = accounts.getItem(__VU % accounts.getLength());
+    const account = accounts.getItem((__VU - 1) % accounts.getLength());
 
     console.log(`Iteration ${__ITER + 1} - User: ${account.userName} registering...`)
     var response = testK6API.register(account);
