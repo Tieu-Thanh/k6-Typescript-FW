@@ -17,16 +17,24 @@ export class APIClient {
 
     // Accepts both JSON objects and strings
     setBody(body: string | object) {
-        if (typeof body === 'object') {
-            this.body = JSON.stringify(body); // Convert object to JSON string
-            // Automatically set Content-Type if not already set
-            if (!this.params.headers || !this.params.headers['Content-Type']) {
-                this.setContentType('application/json');
+            // If the body is an object and the Content-Type is x-www-form-urlencoded, encode it as a form.
+            if (typeof body === 'object') {
+                if (this.params.headers && this.params.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+                    // URL encode the object into a form-encoded string
+                    this.body = Object.keys(body)
+                        .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(body[key as keyof typeof body]))
+                        .join('&');
+                } else {
+                    this.body = JSON.stringify(body); // Convert object to JSON string
+                    // Automatically set Content-Type if not already set
+                    if (!this.params.headers || !this.params.headers['Content-Type']) {
+                        this.setContentType('application/json');
+                    }
+                }
+            } else {
+                this.body = body; // Use as-is if it's already a string
             }
-        } else {
-            this.body = body; // Use as-is if it's already a string
-        }
-        return this;
+            return this;
     }
 
     // Add common headers

@@ -23,7 +23,6 @@ export class K6Config {
         noConnectionReuse: false,
         userAgent: '',
         insecureSkipTLSVerify: false,
-        gracefulStop: '30s',
         throw: false,
         scenarios: {},
     };

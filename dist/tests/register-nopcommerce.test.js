@@ -15,253 +15,8 @@ var __spreadValues = (a, b) => {
   return a;
 };
 
-// src/tests/add-to-cart.test.ts
+// src/tests/register-nopcommerce.test.ts
 import { sleep } from "k6";
-
-// src/config/threshold-config.ts
-var ThresholdsConfig = class {
-  constructor() {
-    this.thresholds = {};
-  }
-  // Add a threshold for HTTP request duration with various conditions
-  setHttpReqDuration(conditions) {
-    this.thresholds["http_req_duration"] = conditions;
-    return this;
-  }
-  // Add a threshold for HTTP request failure rate
-  setHttpReqFailed(conditions) {
-    this.thresholds["http_req_failed"] = conditions;
-    return this;
-  }
-  // Add a threshold for Virtual Users (VUs)
-  setVUs(conditions) {
-    this.thresholds["vus"] = conditions;
-    return this;
-  }
-  // Add a threshold for HTTP request rate
-  setHttpReqRate(conditions) {
-    this.thresholds["http_reqs"] = conditions;
-    return this;
-  }
-  // Add a threshold for iterations duration
-  setIterationDuration(conditions) {
-    this.thresholds["iteration_duration"] = conditions;
-    return this;
-  }
-  // Add a threshold for data sent
-  setDataSent(conditions) {
-    this.thresholds["data_sent"] = conditions;
-    return this;
-  }
-  // Add a threshold for data received
-  setDataReceived(conditions) {
-    this.thresholds["data_received"] = conditions;
-    return this;
-  }
-  // Add a threshold for custom metric
-  setCustomThreshold(metric, conditions) {
-    this.thresholds[metric] = conditions;
-    return this;
-  }
-  // Build and return the final thresholds object
-  build() {
-    return this.thresholds;
-  }
-};
-
-// src/config/k6-config.ts
-var K6Config = class {
-  constructor() {
-    this.config = {
-      hosts: {},
-      thresholds: {},
-      noConnectionReuse: false,
-      userAgent: "",
-      insecureSkipTLSVerify: false,
-      throw: false,
-      scenarios: {}
-    };
-  }
-  // Set hosts mapping for load testing different endpoints
-  setHosts(hosts) {
-    this.config.hosts = hosts;
-    return this;
-  }
-  // Set thresholds, accepting either an object or ThresholdsConfig class
-  setThresholds(thresholds) {
-    if (thresholds instanceof ThresholdsConfig) {
-      this.config.thresholds = thresholds.build();
-    } else {
-      this.config.thresholds = thresholds;
-    }
-    return this;
-  }
-  // Enable or disable connection reuse
-  setConnectionReuse(reuse) {
-    this.config.noConnectionReuse = !reuse;
-    return this;
-  }
-  // Define the user agent for the requests
-  setUserAgent(userAgent) {
-    this.config.userAgent = userAgent;
-    return this;
-  }
-  // Skip TLS verification (useful for self-signed certs)
-  setInsecureSkipTLSVerify(skipVerify) {
-    this.config.insecureSkipTLSVerify = skipVerify;
-    return this;
-  }
-  // Set the grace period to allow iterations to finish before stopping
-  setGracefulStop(duration) {
-    if (!/^\d+(ms|s|m|h|d)$/.test(duration)) {
-      throw new Error("Invalid duration format for gracefulStop");
-    }
-    this.config.gracefulStop = duration;
-    return this;
-  }
-  // Enable throwing exceptions when certain errors occur
-  enableThrow(enable = true) {
-    this.config.throw = enable;
-    return this;
-  }
-  // Add a scenario
-  addScenario(scenario) {
-    Object.assign(this.config.scenarios, scenario.build());
-    return this;
-  }
-  // Set multiple scenarios
-  setScenarios(scenarios) {
-    scenarios.forEach((scenario) => {
-      Object.assign(this.config.scenarios, scenario.build());
-    });
-    return this;
-  }
-  // Build and return the final configuration object
-  build() {
-    if (Object.keys(this.config.scenarios).length > 0) {
-      delete this.config.vus;
-      delete this.config.duration;
-      delete this.config.stages;
-    }
-    return this.config;
-  }
-  // Set arbitrary options
-  setOption(key, value) {
-    this.config[key] = value;
-    return this;
-  }
-  // Set multiple options at once
-  setOptions(options2) {
-    Object.assign(this.config, options2);
-    return this;
-  }
-};
-
-// src/config/scenario-config.ts
-var ScenarioConfig = class {
-  constructor(scenarioName) {
-    this.config = {};
-    this.scenarioName = scenarioName;
-  }
-  setExecutor(executor) {
-    this.config.executor = executor;
-    return this;
-  }
-  setVUs(vus) {
-    this.config.vus = vus;
-    return this;
-  }
-  setDuration(duration) {
-    this.config.duration = duration;
-    return this;
-  }
-  setIterations(iterations) {
-    this.config.iterations = iterations;
-    return this;
-  }
-  setStartTime(startTime) {
-    this.config.startTime = startTime;
-    return this;
-  }
-  setGracefulStop(duration) {
-    this.config.gracefulStop = duration;
-    return this;
-  }
-  setEnv(envVars) {
-    this.config.env = envVars;
-    return this;
-  }
-  setTags(tags) {
-    this.config.tags = tags;
-    return this;
-  }
-  setExec(execFunctionName) {
-    this.config.exec = execFunctionName;
-    return this;
-  }
-  useConstantVUs(vus, duration) {
-    this.config.executor = "constant-vus";
-    this.config.vus = vus;
-    this.config.duration = duration;
-    return this;
-  }
-  useRampingVUs(stages) {
-    this.config.executor = "ramping-vus";
-    this.config.stages = stages;
-    return this;
-  }
-  usePerVUIterations(vus, iterations) {
-    this.config.executor = "per-vu-iterations";
-    this.config.vus = vus;
-    this.config.iterations = iterations;
-    return this;
-  }
-  build() {
-    return { [this.scenarioName]: this.config };
-  }
-};
-
-// src/util/data-provider.ts
-import { SharedArray } from "k6/data";
-import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
-var DataProvider = class {
-  constructor(name, filePath) {
-    this.data = new SharedArray(name, () => this.loadData(filePath));
-  }
-  // Load data based on file type (JSON or CSV)
-  loadData(filePath) {
-    const fileContent = open(filePath);
-    if (filePath.endsWith(".json")) {
-      return JSON.parse(fileContent);
-    } else if (filePath.endsWith(".csv")) {
-      const parsedData = papaparse.parse(fileContent, {
-        header: true,
-        // Assuming the CSV file has headers
-        skipEmptyLines: true
-      });
-      return parsedData.data;
-    } else {
-      throw new Error("Unsupported file format. Only JSON and CSV are supported.");
-    }
-  }
-  // Get the entire data array
-  getAll() {
-    return this.data;
-  }
-  // Get a random item from the data array
-  getRandomItem() {
-    const index = Math.floor(Math.random() * this.data.length);
-    return this.data[index];
-  }
-  // Get an item by index
-  getItem(index) {
-    return this.data[index];
-  }
-  // Get the number of items in the data array
-  getLength() {
-    return this.data.length;
-  }
-};
 
 // src/clients/api-client.ts
 import http from "k6/http";
@@ -471,28 +226,271 @@ function convertToUrlForm(productName) {
   return productName.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s*-\s*/g, "-").replace(/\s+/g, "-").trim();
 }
 
-// src/tests/add-to-cart.test.ts
-var accounts = new DataProvider("accounts", "../../src/test-data/accounts.json");
-var products = new DataProvider("products", "../../src/test-data/products.json");
-var browsingScenario = new ScenarioConfig("browsing-products").usePerVUIterations(10, 5).setExec("addToCartTest");
-var options = new K6Config().addScenario(browsingScenario).build();
-function addToCartTest() {
-  const nopCommerceAPI = new NopCommerceAPI();
-  const user = accounts.getItem((__VU - 1) % accounts.getLength());
-  var resLogin = nopCommerceAPI.login(user);
-  sleep(1);
-  const product = products.getRandomItem();
-  const tokenProduct = nopCommerceAPI.browseProducts(product);
-  const addProductFlag = Math.random() < 0.5;
-  if (addProductFlag) {
-    nopCommerceAPI.addToCart(product, tokenProduct);
-    console.log(`Iteration ${__ITER + 1} - User: ${user.email} - Product: ${product.name} - ADDED to cart`);
-    return;
+// src/util/data-provider.ts
+import { SharedArray } from "k6/data";
+import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
+var DataProvider = class {
+  constructor(name, filePath) {
+    this.data = new SharedArray(name, () => this.loadData(filePath));
   }
-  console.log(`Iteration ${__ITER + 1} - User: ${user.email} - Product: ${product.name} - SKIPPED`);
+  // Load data based on file type (JSON or CSV)
+  loadData(filePath) {
+    const fileContent = open(filePath);
+    if (filePath.endsWith(".json")) {
+      return JSON.parse(fileContent);
+    } else if (filePath.endsWith(".csv")) {
+      const parsedData = papaparse.parse(fileContent, {
+        header: true,
+        // Assuming the CSV file has headers
+        skipEmptyLines: true
+      });
+      return parsedData.data;
+    } else {
+      throw new Error("Unsupported file format. Only JSON and CSV are supported.");
+    }
+  }
+  // Get the entire data array
+  getAll() {
+    return this.data;
+  }
+  // Get a random item from the data array
+  getRandomItem() {
+    const index = Math.floor(Math.random() * this.data.length);
+    return this.data[index];
+  }
+  // Get an item by index
+  getItem(index) {
+    return this.data[index];
+  }
+  // Get the number of items in the data array
+  getLength() {
+    return this.data.length;
+  }
+};
+
+// src/config/scenario-config.ts
+var ScenarioConfig = class {
+  constructor(scenarioName) {
+    this.config = {};
+    this.scenarioName = scenarioName;
+  }
+  setExecutor(executor) {
+    this.config.executor = executor;
+    return this;
+  }
+  setVUs(vus) {
+    this.config.vus = vus;
+    return this;
+  }
+  setDuration(duration) {
+    this.config.duration = duration;
+    return this;
+  }
+  setIterations(iterations) {
+    this.config.iterations = iterations;
+    return this;
+  }
+  setStartTime(startTime) {
+    this.config.startTime = startTime;
+    return this;
+  }
+  setGracefulStop(duration) {
+    this.config.gracefulStop = duration;
+    return this;
+  }
+  setEnv(envVars) {
+    this.config.env = envVars;
+    return this;
+  }
+  setTags(tags) {
+    this.config.tags = tags;
+    return this;
+  }
+  setExec(execFunctionName) {
+    this.config.exec = execFunctionName;
+    return this;
+  }
+  useConstantVUs(vus, duration) {
+    this.config.executor = "constant-vus";
+    this.config.vus = vus;
+    this.config.duration = duration;
+    return this;
+  }
+  useRampingVUs(stages) {
+    this.config.executor = "ramping-vus";
+    this.config.stages = stages;
+    return this;
+  }
+  usePerVUIterations(vus, iterations) {
+    this.config.executor = "per-vu-iterations";
+    this.config.vus = vus;
+    this.config.iterations = iterations;
+    return this;
+  }
+  build() {
+    return { [this.scenarioName]: this.config };
+  }
+};
+
+// src/config/threshold-config.ts
+var ThresholdsConfig = class {
+  constructor() {
+    this.thresholds = {};
+  }
+  // Add a threshold for HTTP request duration with various conditions
+  setHttpReqDuration(conditions) {
+    this.thresholds["http_req_duration"] = conditions;
+    return this;
+  }
+  // Add a threshold for HTTP request failure rate
+  setHttpReqFailed(conditions) {
+    this.thresholds["http_req_failed"] = conditions;
+    return this;
+  }
+  // Add a threshold for Virtual Users (VUs)
+  setVUs(conditions) {
+    this.thresholds["vus"] = conditions;
+    return this;
+  }
+  // Add a threshold for HTTP request rate
+  setHttpReqRate(conditions) {
+    this.thresholds["http_reqs"] = conditions;
+    return this;
+  }
+  // Add a threshold for iterations duration
+  setIterationDuration(conditions) {
+    this.thresholds["iteration_duration"] = conditions;
+    return this;
+  }
+  // Add a threshold for data sent
+  setDataSent(conditions) {
+    this.thresholds["data_sent"] = conditions;
+    return this;
+  }
+  // Add a threshold for data received
+  setDataReceived(conditions) {
+    this.thresholds["data_received"] = conditions;
+    return this;
+  }
+  // Add a threshold for custom metric
+  setCustomThreshold(metric, conditions) {
+    this.thresholds[metric] = conditions;
+    return this;
+  }
+  // Build and return the final thresholds object
+  build() {
+    return this.thresholds;
+  }
+};
+
+// src/config/k6-config.ts
+var K6Config = class {
+  constructor() {
+    this.config = {
+      hosts: {},
+      thresholds: {},
+      noConnectionReuse: false,
+      userAgent: "",
+      insecureSkipTLSVerify: false,
+      throw: false,
+      scenarios: {}
+    };
+  }
+  // Set hosts mapping for load testing different endpoints
+  setHosts(hosts) {
+    this.config.hosts = hosts;
+    return this;
+  }
+  // Set thresholds, accepting either an object or ThresholdsConfig class
+  setThresholds(thresholds2) {
+    if (thresholds2 instanceof ThresholdsConfig) {
+      this.config.thresholds = thresholds2.build();
+    } else {
+      this.config.thresholds = thresholds2;
+    }
+    return this;
+  }
+  // Enable or disable connection reuse
+  setConnectionReuse(reuse) {
+    this.config.noConnectionReuse = !reuse;
+    return this;
+  }
+  // Define the user agent for the requests
+  setUserAgent(userAgent) {
+    this.config.userAgent = userAgent;
+    return this;
+  }
+  // Skip TLS verification (useful for self-signed certs)
+  setInsecureSkipTLSVerify(skipVerify) {
+    this.config.insecureSkipTLSVerify = skipVerify;
+    return this;
+  }
+  // Set the grace period to allow iterations to finish before stopping
+  setGracefulStop(duration) {
+    if (!/^\d+(ms|s|m|h|d)$/.test(duration)) {
+      throw new Error("Invalid duration format for gracefulStop");
+    }
+    this.config.gracefulStop = duration;
+    return this;
+  }
+  // Enable throwing exceptions when certain errors occur
+  enableThrow(enable = true) {
+    this.config.throw = enable;
+    return this;
+  }
+  // Add a scenario
+  addScenario(scenario) {
+    Object.assign(this.config.scenarios, scenario.build());
+    return this;
+  }
+  // Set multiple scenarios
+  setScenarios(scenarios) {
+    scenarios.forEach((scenario) => {
+      Object.assign(this.config.scenarios, scenario.build());
+    });
+    return this;
+  }
+  // Build and return the final configuration object
+  build() {
+    if (Object.keys(this.config.scenarios).length > 0) {
+      delete this.config.vus;
+      delete this.config.duration;
+      delete this.config.stages;
+    }
+    return this.config;
+  }
+  // Set arbitrary options
+  setOption(key, value) {
+    this.config[key] = value;
+    return this;
+  }
+  // Set multiple options at once
+  setOptions(options2) {
+    Object.assign(this.config, options2);
+    return this;
+  }
+};
+
+// src/tests/register-nopcommerce.test.ts
+var accounts = new DataProvider("accounts", "../../src/test-data/accounts.json");
+var rampingVUs = new ScenarioConfig("ramp-up-vus").useRampingVUs([
+  { duration: "10s", target: 5 },
+  // ramp-up to 5 users in 10 seconds
+  { duration: "1m", target: 5 },
+  // stay at 5 users for 1 minute
+  { duration: "10s", target: 0 }
+  // ramp-down to 0 users in 10 seconds
+]).setExec("registerNopCommerceTest");
+var thresholds = new ThresholdsConfig().setHttpReqDuration(["p(95)<500"]).setHttpReqFailed(["rate<0.01"]);
+var options = new K6Config().setThresholds(thresholds).addScenario(rampingVUs).build();
+function registerNopCommerceTest() {
+  const nopCommerceAPI = new NopCommerceAPI();
+  const account = accounts.getItem(__VU % accounts.getLength());
+  var response = nopCommerceAPI.register(account);
+  new ResponseCheck(response, "Register successfully").status(200);
   sleep(1);
 }
 export {
-  addToCartTest,
-  options
+  options,
+  registerNopCommerceTest
 };

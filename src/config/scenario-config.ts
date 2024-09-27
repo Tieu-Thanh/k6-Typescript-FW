@@ -50,7 +50,7 @@ export class ScenarioConfig {
         this.config.exec = execFunctionName;
         return this;
     }
-    
+
     useConstantVUs(vus: number, duration: string) {
         this.config.executor = 'constant-vus';
         this.config.vus = vus;
@@ -64,10 +64,11 @@ export class ScenarioConfig {
         return this;
     }
 
-    usePerVUIterations(vus: number, iterations: number) {
+    usePerVUIterations(vus: number, iterations: number, maxDuration: string = '10m') {
         this.config.executor = 'per-vu-iterations';
         this.config.vus = vus;
         this.config.iterations = iterations;
+        this.config.maxDuration = maxDuration;
         return this;
     }
     build() {
