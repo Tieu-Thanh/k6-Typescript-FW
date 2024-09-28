@@ -30,6 +30,8 @@ export function addToCartTest() {
 
     // Login step
     var resLogin = nopCommerceAPI.login(user);
+    new ResponseCheck(resLogin, 'Login successfully').status(200);
+
     sleep(1);
 
     // Browse products
@@ -41,7 +43,9 @@ export function addToCartTest() {
 
     // Add to cart if the flag is true
     if (addProductFlag) {
-        nopCommerceAPI.addToCart(product, tokenProduct);
+        const resAddToCart = nopCommerceAPI.addToCart(product, tokenProduct);
+        new ResponseCheck(resAddToCart, `Add product ${product.name} to cart successfully`).status(200);
+
         console.log(`Iteration ${__ITER + 1} - User: ${user.email} - Product: ${product.name} - ADDED to cart`);
         return;  // Exit the function early if the product is added
     }

@@ -43,6 +43,8 @@ For demonstration, the project implements test scripts on NopCommerce and the Te
 - Refactor/clean up class definitions.
 - Handle parallel runs.
 - Allow subdirectories in `/tests`.
+- Run test scripts by tag names.
+- Set up CI/CD intergration.
 
 ---
 

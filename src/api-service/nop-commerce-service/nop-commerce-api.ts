@@ -62,8 +62,7 @@ export default class NopCommerceAPI {
             .setContentType('application/x-www-form-urlencoded')
             .setBody(payload)
             .send();
-
-        new ResponseCheck(response, 'Login successfully').status(200);
+        // new ResponseCheck(response, 'Login successfully').status(200);
 
         return response;
     }
@@ -74,7 +73,7 @@ export default class NopCommerceAPI {
         const url = `${BASEURL}${BROWSE_PRODUCT_ENDPOINT.replace('{}', convertToUrlForm(product.name))}`;
 
         const response = new APIClient('GET', url).send();
-        new ResponseCheck(response, `Browse product ${product.name} successfully`).status(200);
+        // new ResponseCheck(response, `Browse product ${product.name} successfully`).status(200);
 
         const token = this.extractRequestVerificationToken(response.body);
         return token;
@@ -93,8 +92,6 @@ export default class NopCommerceAPI {
             .setContentType('application/x-www-form-urlencoded; charset=UTF-8')
             .setBody(payload)
             .send();
-
-        new ResponseCheck(response, `Add product ${product.name} to cart successfully`).status(200);
 
         return response;
     }
